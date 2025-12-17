@@ -1,0 +1,601 @@
+[
+    {
+        "id": "4e650a21b7ce57be",
+        "type": "tab",
+        "label": "ALL_example",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "4ed13a772cd7367e",
+        "type": "group",
+        "z": "4e650a21b7ce57be",
+        "name": "API_TO_CSV",
+        "style": {
+            "label": true
+        },
+        "nodes": [
+            "8b1c8a91d26b8b4c",
+            "12f13daa701fbbe8",
+            "e0aa0f34506b2e39",
+            "2da897f3c11d4cdc",
+            "39f2a6c5931c7c80",
+            "01c2a2cc1df2872c",
+            "42bff45a8b159a70"
+        ],
+        "x": 74,
+        "y": 259,
+        "w": 1032,
+        "h": 122
+    },
+    {
+        "id": "f745a96dd053dc47",
+        "type": "group",
+        "z": "4e650a21b7ce57be",
+        "name": "CSV _Read",
+        "style": {
+            "label": true
+        },
+        "nodes": [
+            "682cd4d444762794",
+            "3daefcb19a52df9e",
+            "b1a113f07841cd05",
+            "5f4d012b562cac98",
+            "c9d997fda49ddc39"
+        ],
+        "x": 74,
+        "y": 399,
+        "w": 872,
+        "h": 122
+    },
+    {
+        "id": "d3e5c84948adbf73",
+        "type": "group",
+        "z": "4e650a21b7ce57be",
+        "name": "API_TO_CSV",
+        "style": {
+            "label": true
+        },
+        "nodes": [
+            "e4267eaab3b1417d",
+            "bf92b1caaf4f0bf4",
+            "c70da1a813386c2e"
+        ],
+        "x": 74,
+        "y": 159,
+        "w": 572,
+        "h": 82
+    },
+    {
+        "id": "aa28b3ec6cdbb8bc",
+        "type": "group",
+        "z": "4e650a21b7ce57be",
+        "name": "csv to influx",
+        "style": {
+            "stroke": "#92d04f",
+            "label": true
+        },
+        "nodes": [
+            "0ba9c479d2a05d85",
+            "a283038927c79c0f",
+            "d18e42c3d90dbb2f",
+            "efee9dc16eb47b5e",
+            "6e7a95a11a1fcdc4",
+            "9b907176e5f6b264",
+            "8f3254a8e9d113a0",
+            "98436f582f2144f0"
+        ],
+        "x": 74,
+        "y": 539,
+        "w": 1432,
+        "h": 122
+    },
+    {
+        "id": "8b1c8a91d26b8b4c",
+        "type": "http request",
+        "z": "4e650a21b7ce57be",
+        "g": "4ed13a772cd7367e",
+        "name": "",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "https://goweather.xyz/weather/Bangkok",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 370,
+        "y": 300,
+        "wires": [
+            [
+                "2da897f3c11d4cdc"
+            ]
+        ]
+    },
+    {
+        "id": "12f13daa701fbbe8",
+        "type": "inject",
+        "z": "4e650a21b7ce57be",
+        "g": "4ed13a772cd7367e",
+        "name": "",
+        "props": [],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 170,
+        "y": 300,
+        "wires": [
+            [
+                "8b1c8a91d26b8b4c"
+            ]
+        ]
+    },
+    {
+        "id": "e0aa0f34506b2e39",
+        "type": "function",
+        "z": "4e650a21b7ce57be",
+        "g": "4ed13a772cd7367e",
+        "name": "template csv",
+        "func": "let raw = msg.payload.current;\n\nlet timestamp = new Date().toISOString();\nlet temp = raw[\"temperature\"] ?? \"\";\n\nmsg.payload = `${timestamp},${temp}`;\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 730,
+        "y": 300,
+        "wires": [
+            [
+                "39f2a6c5931c7c80"
+            ]
+        ]
+    },
+    {
+        "id": "2da897f3c11d4cdc",
+        "type": "function",
+        "z": "4e650a21b7ce57be",
+        "g": "4ed13a772cd7367e",
+        "name": "clean data",
+        "func": "let src = msg.payload;\n\nfunction parseNumber(str) {\n    if (!str) return null;\n    let n = str.replace(/[^\\d.-]/g, \"\");\n    return n === \"\" ? null : Number(n);\n}\n\n// ===== current weather =====\nlet current = {\n    temperature: parseNumber(src.temperature),\n    wind_kmh: parseNumber(src.wind),\n    description: src.description\n};\n\nmsg.payload = {\n    current\n};\n\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 550,
+        "y": 300,
+        "wires": [
+            [
+                "e0aa0f34506b2e39"
+            ]
+        ]
+    },
+    {
+        "id": "39f2a6c5931c7c80",
+        "type": "file",
+        "z": "4e650a21b7ce57be",
+        "g": "4ed13a772cd7367e",
+        "name": "",
+        "filename": "/data/csv/weather.csv",
+        "filenameType": "str",
+        "appendNewline": true,
+        "createDir": true,
+        "overwriteFile": "false",
+        "encoding": "none",
+        "x": 980,
+        "y": 300,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "01c2a2cc1df2872c",
+        "type": "function",
+        "z": "4e650a21b7ce57be",
+        "g": "4ed13a772cd7367e",
+        "name": "template csv",
+        "func": "msg.payload = `timestamp,temp`;\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 730,
+        "y": 340,
+        "wires": [
+            [
+                "39f2a6c5931c7c80"
+            ]
+        ]
+    },
+    {
+        "id": "42bff45a8b159a70",
+        "type": "inject",
+        "z": "4e650a21b7ce57be",
+        "g": "4ed13a772cd7367e",
+        "name": "",
+        "props": [],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 170,
+        "y": 340,
+        "wires": [
+            [
+                "01c2a2cc1df2872c"
+            ]
+        ]
+    },
+    {
+        "id": "682cd4d444762794",
+        "type": "file in",
+        "z": "4e650a21b7ce57be",
+        "g": "f745a96dd053dc47",
+        "name": "",
+        "filename": "/data/csv/weather_ocean_2024.csv",
+        "filenameType": "str",
+        "format": "utf8",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "none",
+        "allProps": false,
+        "x": 420,
+        "y": 440,
+        "wires": [
+            [
+                "5f4d012b562cac98"
+            ]
+        ]
+    },
+    {
+        "id": "3daefcb19a52df9e",
+        "type": "debug",
+        "z": "4e650a21b7ce57be",
+        "g": "f745a96dd053dc47",
+        "name": "debug 6",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 840,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "b1a113f07841cd05",
+        "type": "inject",
+        "z": "4e650a21b7ce57be",
+        "g": "f745a96dd053dc47",
+        "name": "",
+        "props": [],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 170,
+        "y": 440,
+        "wires": [
+            [
+                "682cd4d444762794"
+            ]
+        ]
+    },
+    {
+        "id": "5f4d012b562cac98",
+        "type": "csv",
+        "z": "4e650a21b7ce57be",
+        "g": "f745a96dd053dc47",
+        "name": "Header",
+        "spec": "rfc",
+        "sep": ",",
+        "hdrin": true,
+        "hdrout": "none",
+        "multi": "one",
+        "ret": "\\r\\n",
+        "temp": "",
+        "skip": "0",
+        "strings": true,
+        "include_empty_strings": "",
+        "include_null_values": "",
+        "x": 680,
+        "y": 440,
+        "wires": [
+            [
+                "3daefcb19a52df9e"
+            ]
+        ]
+    },
+    {
+        "id": "c9d997fda49ddc39",
+        "type": "csv",
+        "z": "4e650a21b7ce57be",
+        "g": "f745a96dd053dc47",
+        "name": "No Header",
+        "spec": "rfc",
+        "sep": ",",
+        "hdrin": false,
+        "hdrout": "none",
+        "multi": "one",
+        "ret": "\\r\\n",
+        "temp": "timestamp,temperature",
+        "skip": "1",
+        "strings": true,
+        "include_empty_strings": "",
+        "include_null_values": "",
+        "x": 670,
+        "y": 480,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "e4267eaab3b1417d",
+        "type": "http request",
+        "z": "4e650a21b7ce57be",
+        "g": "d3e5c84948adbf73",
+        "name": "",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "https://goweather.xyz/weather/Bangkok",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 370,
+        "y": 200,
+        "wires": [
+            [
+                "c70da1a813386c2e"
+            ]
+        ]
+    },
+    {
+        "id": "bf92b1caaf4f0bf4",
+        "type": "inject",
+        "z": "4e650a21b7ce57be",
+        "g": "d3e5c84948adbf73",
+        "name": "",
+        "props": [],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 170,
+        "y": 200,
+        "wires": [
+            [
+                "e4267eaab3b1417d"
+            ]
+        ]
+    },
+    {
+        "id": "c70da1a813386c2e",
+        "type": "debug",
+        "z": "4e650a21b7ce57be",
+        "g": "d3e5c84948adbf73",
+        "name": "debug 7",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 540,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "0ba9c479d2a05d85",
+        "type": "file in",
+        "z": "4e650a21b7ce57be",
+        "g": "aa28b3ec6cdbb8bc",
+        "name": "",
+        "filename": "/data/csv/weather_ocean_2024.csv",
+        "filenameType": "str",
+        "format": "utf8",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "none",
+        "allProps": false,
+        "x": 400,
+        "y": 580,
+        "wires": [
+            [
+                "efee9dc16eb47b5e"
+            ]
+        ]
+    },
+    {
+        "id": "a283038927c79c0f",
+        "type": "debug",
+        "z": "4e650a21b7ce57be",
+        "g": "aa28b3ec6cdbb8bc",
+        "name": "debug 8",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1160,
+        "y": 620,
+        "wires": []
+    },
+    {
+        "id": "d18e42c3d90dbb2f",
+        "type": "inject",
+        "z": "4e650a21b7ce57be",
+        "g": "aa28b3ec6cdbb8bc",
+        "name": "",
+        "props": [],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 170,
+        "y": 580,
+        "wires": [
+            [
+                "0ba9c479d2a05d85"
+            ]
+        ]
+    },
+    {
+        "id": "efee9dc16eb47b5e",
+        "type": "csv",
+        "z": "4e650a21b7ce57be",
+        "g": "aa28b3ec6cdbb8bc",
+        "name": "Header",
+        "spec": "rfc",
+        "sep": ",",
+        "hdrin": true,
+        "hdrout": "none",
+        "multi": "one",
+        "ret": "\\r\\n",
+        "temp": "",
+        "skip": "0",
+        "strings": true,
+        "include_empty_strings": "",
+        "include_null_values": "",
+        "x": 640,
+        "y": 580,
+        "wires": [
+            [
+                "6e7a95a11a1fcdc4"
+            ]
+        ]
+    },
+    {
+        "id": "6e7a95a11a1fcdc4",
+        "type": "function",
+        "z": "4e650a21b7ce57be",
+        "g": "aa28b3ec6cdbb8bc",
+        "name": "datetime_filter",
+        "func": "let s = msg.payload.date; \n\nif (!s) return null;\n\n// date / time\nlet parts = s.split(\" \");\nif (parts.length !== 2) return null;\n\n// date: yyyy-mm-dd\nlet d = parts[0].split(\"-\");\nif (d.length !== 3) return null;\n\n// time: HH:mm:ss(.nano)\nlet t = parts[1].split(\":\");\nif (t.length < 2) return null;\n\n// nanosecond\nlet sec = t[2] ? t[2].split(\".\")[0] : \"00\";\n\n// ISO string\nlet iso = `${d[0]}-${d[1]}-${d[2]}T${t[0]}:${t[1]}:${sec}Z`;\nlet ts = Date.parse(iso);\n\nif (isNaN(ts)) return null;\nmsg.payload._ts = ts;\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 820,
+        "y": 580,
+        "wires": [
+            [
+                "98436f582f2144f0"
+            ]
+        ]
+    },
+    {
+        "id": "9b907176e5f6b264",
+        "type": "delay",
+        "z": "4e650a21b7ce57be",
+        "g": "aa28b3ec6cdbb8bc",
+        "name": "",
+        "pauseType": "rate",
+        "timeout": "5",
+        "timeoutUnits": "seconds",
+        "rate": "500",
+        "nbRateUnits": "1",
+        "rateUnits": "second",
+        "randomFirst": "1",
+        "randomLast": "5",
+        "randomUnits": "seconds",
+        "drop": false,
+        "allowrate": false,
+        "outputs": 1,
+        "x": 1160,
+        "y": 580,
+        "wires": [
+            [
+                "8f3254a8e9d113a0"
+            ]
+        ]
+    },
+    {
+        "id": "8f3254a8e9d113a0",
+        "type": "influxdb batch",
+        "z": "4e650a21b7ce57be",
+        "g": "aa28b3ec6cdbb8bc",
+        "influxdb": "68c9791e3964a7ce",
+        "precision": "",
+        "retentionPolicy": "",
+        "name": "",
+        "database": "database",
+        "precisionV18FluxV20": "ms",
+        "retentionPolicyV18Flux": "",
+        "org": "admin",
+        "bucket": "aw",
+        "x": 1370,
+        "y": 580,
+        "wires": []
+    },
+    {
+        "id": "98436f582f2144f0",
+        "type": "function",
+        "z": "4e650a21b7ce57be",
+        "g": "aa28b3ec6cdbb8bc",
+        "name": "influx_format",
+        "func": "msg.payload = [\n  {\n    measurement: \"weather_ocean\",\n    fields: {\n      temperature_C: Number(msg.payload.temperature_C),\n      humidity_percent: Number(msg.payload.humidity_percent),\n      wind_speed_mps: Number(msg.payload.wind_speed_mps),\n      wave_height_m: Number(msg.payload.wave_height_m),\n      pressure_hPa: Number(msg.payload.pressure_hPa)\n    },\n    tags: {\n      country: String(msg.payload.country)\n    },\n    timestamp: new Date(msg.payload._ts)\n  }\n];\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 990,
+        "y": 580,
+        "wires": [
+            [
+                "9b907176e5f6b264",
+                "a283038927c79c0f"
+            ]
+        ]
+    },
+    {
+        "id": "68c9791e3964a7ce",
+        "type": "influxdb",
+        "hostname": "127.0.0.1",
+        "port": 8086,
+        "protocol": "http",
+        "database": "database",
+        "name": "",
+        "usetls": false,
+        "tls": "",
+        "influxdbVersion": "2.0",
+        "url": "http://influxdb:8086",
+        "timeout": 10,
+        "rejectUnauthorized": true
+    },
+    {
+        "id": "1287caa522f4842f",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-contrib-influxdb": "0.7.0"
+        }
+    }
+]
